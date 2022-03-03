@@ -1,8 +1,9 @@
 package lab2;
 
 
+import java.util.Map;
 
-/** 
+/**
  *   Ledger defines for each user the balance at a given time
      in the ledger model of bitcoins
      and contains methods for checking and updating the ledger
@@ -47,6 +48,9 @@ public class Ledger extends UserAmount{
 
     public boolean checkUserAmountDeductable(UserAmount userAmountCheck){
 	// you need to replace then next line by the correct statement
+       for(Map.Entry<String,Integer> entry: userAmountCheck.getUserAmountBase().entrySet() ){
+           if(!this.checkBalance(entry.getKey(),entry.getValue())) return false;
+       }
 	return true;
     };
 
@@ -67,8 +71,10 @@ public class Ledger extends UserAmount{
 
     public boolean checkEntryListDeductable(EntryList txel){
 	// you need to replace then next line by the correct statement
-	return true;
+	return checkUserAmountDeductable(new UserAmount(txel));
     };
+
+
 
     /** 
      *  Task 3: Fill in the methods subtractEntryList and  addEntryList.
@@ -78,10 +84,11 @@ public class Ledger extends UserAmount{
      *   requires that the list to be deducted is deductable.
      *   
      */    
-    
 
     public void subtractEntryList(EntryList txel){
-	//  fill in Body	
+	//  fill in Body
+        txel.toList().forEach(entry -> this.subtractBalance(entry.getUser(),entry.getAmount()));
+
     }
 
 
@@ -94,6 +101,7 @@ public class Ledger extends UserAmount{
 
     public void addEntryList(EntryList txel){
 	// fill in Body
+        txel.toList().forEach(entry -> this.addBalance(entry.getUser(),entry.getAmount()));
     }
 
 
@@ -110,7 +118,7 @@ public class Ledger extends UserAmount{
     
     public boolean checkTransactionValid(Transaction tx){
 	// you need to replace then next line by the correct statement
-	return true;	
+	return tx.checkTransactionAmountsValid();
     };
 
     /** 
@@ -145,6 +153,6 @@ public class Ledger extends UserAmount{
      */            
 
     public static void main(String[] args) {
-	Ledger.test();	
+	Ledger.test();
     }
 }
