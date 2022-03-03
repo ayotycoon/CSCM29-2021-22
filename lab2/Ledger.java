@@ -119,10 +119,7 @@ public class Ledger extends UserAmount{
     public boolean checkTransactionValid(Transaction tx){
 	// you need to replace then next line by the correct statement
         var inputs = tx.toInputs();
-        for(Entry entry: inputs.toList() ){
-            if(!this.checkBalance(entry.getUser(),entry.getAmount())) return false;
-        }
-	return tx.checkTransactionAmountsValid();
+        return checkEntryListDeductable(inputs) && tx.checkTransactionAmountsValid();
     };
 
     /** 
@@ -137,7 +134,13 @@ public class Ledger extends UserAmount{
     
 
     public void processTransaction(Transaction tx){
-	// fill in Body	
+	// fill in Body
+        if(!checkTransactionValid(tx)) return;
+        var inputs = tx.toInputs();
+        var outputs = tx.toOutputs();
+
+     this.subtractEntryList(inputs);
+     this.addEntryList(outputs);
     };
 
 
@@ -149,7 +152,54 @@ public class Ledger extends UserAmount{
      */
     
     public static void test() {
-	// fill in Body	
+	// fill in Body
+        Ledger ledger = new Ledger();
+        ledger.addAccount("Alice",0);
+        ledger.addAccount("Bob",0);
+        ledger.addAccount("Carol",0);
+        ledger.addAccount("David",0);
+
+
+        ledger.setBalance("Alice",20);
+        ledger.setBalance("Bob",15);
+
+        ledger.addBalance("Alice",5);
+        ledger.subtractBalance("Bob",5);
+
+
+        var txel1 = new EntryList("Alice",15,"Bob",10);
+
+        System.out.println("Alice 15, Bob 10 "+ledger.checkEntryListDeductable(txel1));
+
+
+        var txel2 = new EntryList("Alice",15,"Alice",15,"Bob",5);
+        System.out.println("Alice 15, Alice 15, Bob 5 " + ledger.checkEntryListDeductable(txel2));
+
+        System.out.println("Subtract txel1 from ledger " );
+                ledger.subtractEntryList(txel1);
+
+        System.out.println("add txel2 to ledger " );
+        ledger.addEntryList(txel2);
+
+
+        Transaction tx1 = new Transaction(new EntryList("Alice",45),
+                new EntryList("Bob",5,"Carol",20));
+        tx1.testCase("Transaction Alice 45  to Bob 5 and Carol 20");
+
+        Transaction tx2 = new Transaction(new EntryList("Alice",20),
+                new EntryList("Bob",5,"Carol",20));
+        tx2.testCase("Transaction Alice 20  to Bob 5 and Carol 20");
+
+        Transaction tx3 = new Transaction(new EntryList("Alice",25),
+                new EntryList("Bob",10,"Carol",15));
+        tx3.testCase("Transaction Alice 25  to Bob 10 and Carol 15");
+
+        ledger.processTransaction(tx3);
+
+        Transaction tx4 = new Transaction(new EntryList("Alice",5,"Alice",5),
+                new EntryList("Bob",10));
+        tx4.testCase("Transaction twice Alice 5  to Bob 5 and Carol 10");
+        ledger.processTransaction(tx4);
     }
     
     /** 
