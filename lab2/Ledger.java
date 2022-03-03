@@ -118,6 +118,10 @@ public class Ledger extends UserAmount{
     
     public boolean checkTransactionValid(Transaction tx){
 	// you need to replace then next line by the correct statement
+        var inputs = tx.toInputs();
+        for(Entry entry: inputs.toList() ){
+            if(!this.checkBalance(entry.getUser(),entry.getAmount())) return false;
+        }
 	return tx.checkTransactionAmountsValid();
     };
 
